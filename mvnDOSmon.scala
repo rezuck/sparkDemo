@@ -23,12 +23,13 @@ object mvnDOSmon {
     /* We note that a typical record has the form:
      * 
      * 209.112.9.34 - - [25/May/2015:23:11:15 +0000] "GET / HTTP/1.0" 200 3557 "-" "Mozilla/3.01 (compatible;)"
-     * for our purposes, two pieces of information are important, the IP address and the time stamp.
+     * 
+     * For our purposes, two pieces of information are important, the IP address and the time stamp.
      * 
      * The time stamp can be used to isolate, from all of the data, only those records that are pertinent to the
-     * investigation. For example, we may be interested in the possible attacks over a minute.
+     * investigation. For example, we may be interested in the possible attacks over a month, or a second.
      * 
-     * From our data we see that our minimal increment is one minute. To filter for this minute we might use
+     * From our data we see that our minimal increment is one second. To filter for this second we might use
      * 
      * val ipTime iplog.filter(line => line.contains("25/May/2015:23:11:15"))
      * 
@@ -56,9 +57,11 @@ object mvnDOSmon {
      * Having spilt our records, we now seek to build our key, value pair. Since the first
      * element of our array list contains the network, we use that as our key.
      * 
-     * Next, for each record matching our key we indicate the hit using the map command.
+     * Next, for each record matching our key we indicate the hit using the map command. In our case
+     * we would get (209,1) where "209" is the key and "1" (integer) is the value.
      * 
-     * We then sum the number of hits up with the reduce command.
+     * We then sum the number of hits up with the reduce command. In our case we add up all
+     * of the values.
      * 
      * Finally, we write out the results to a file.
      */
@@ -67,7 +70,7 @@ object mvnDOSmon {
      .saveAsTextFile("/home/ron/Documents/Output.txt")
    /*
     * The use of a function is kind of silly as we don't need to use a function to map
-    * the line. It is included here to demonstrate that it can be done. If we we to 
+    * the line. It is included here to demonstrate that it can be done. If we were to 
     * want, say, the full IP Address we could use the function makeKey2 listed below.
     * We also note that a function could be used in the creation of a value.
     *
@@ -104,8 +107,9 @@ object mvnDOSmon {
         
   }
   /*
-   * makeKey is a Scala function to construct the key. Here it is trivial. It is done
-   * to show that a fully formed function can be used.
+   * makeKey is a Scala function to construct the key. Here it is trivial. The input value is the
+   * first element of our array list and is just returns it. This is done to show that a fully
+   * formed function can be used.
    */
   def makeKey(l:String) = l
   /*
@@ -113,8 +117,16 @@ object mvnDOSmon {
    * It's usage is:
    * 
    * val ipadrrs = iplines.map{line => (makeKey(line(0),line(1),line(2),line(3)) , 1)}
+   * 
+   * The input values are the first four elements of our array list.
+   * 
+   * We take the substring of our fourth element because the input value has the form:
+   * 
+   * 34 - - [25/May/2015:23:11:15 +0000] "GET / HTTP/1
+   * 
+   * because of the way we split the record.
    */
-  def makeKey2(l:String,l1:String, l2:String, l3:String) = l + "." + l1 + "." + l2 + "." + l3
+  def makeKey2(l:String,l1:String, l2:String, l3:String) = l + "." + l1 + "." + l2 + "." + l3.substring(0,l3.indexOf(" "))
 /*
  * Discussion:
  * 
