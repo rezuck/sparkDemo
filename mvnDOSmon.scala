@@ -18,7 +18,7 @@ object mvnDOSmon {
     val sc = new SparkContext(conf)
     
     //Get the workfile.
-    val iplog = sc.textFile("/home/ron/Documents/apache-access-log.txt")
+    val iplog = sc.textFile("/home/ron/workspace/maven/tccmaven/apache-access-log.txt")
     
     /* We note that a typical record has the form:
      * 
@@ -30,9 +30,11 @@ object mvnDOSmon {
      * investigation. For example, we may be interested in the possible attacks over a month, or a second.
      * 
      * From our data we see that our minimal increment is one second. To filter for this second we might use
-     * 
-     * val ipTime iplog.filter(line => line.contains("25/May/2015:23:11:15"))
-     * 
+     */ 
+	  
+      val ipTime iplog.filter(line => line.contains("25/May/2015:23:11:15"))
+     
+    /* 
      * This would give us a reduced set containing only those records that occurred at the 25/May/2015:23:11:15.
      * (We don't do this here because the data only covers the minimal period.
      * 
@@ -67,7 +69,7 @@ object mvnDOSmon {
      */
     val ipadrrs = iplines.map{line => (makeKey(line(0)) , 1)}
      .reduceByKey(_+_)
-     .saveAsTextFile("/home/ron/Documents/Output.txt")
+     .saveAsTextFile("/home/ron/workspace/maven/tccmaven/Output.txt")
    /*
     * The use of a function is kind of silly as we don't need to use a function to map
     * the line. It is included here to demonstrate that it can be done. If we were to 
